@@ -1,14 +1,21 @@
-version: '3.3'   # Docker Engine release 18.02.0+
-
 services:
   backend:
-    image: swtsystem/unifi_backend
+    build: ./backend
     container_name: unifi_access_be
     ports:
       - 8888:8888
+    volumes:
+      - uaa_data:/data
+    environment:
+      UAA_SECRET_KEY: ${UAA_SECRET_KEY:-please-change-me}
 
   frontend:
-    image: swtsystem/unifi_frontend
+    build: ./frontend
     container_name: unifi_access_fe
     ports:
       - 4000:4000
+    depends_on:
+      - backend
+
+volumes:
+  uaa_data:
