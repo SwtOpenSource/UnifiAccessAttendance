@@ -18,11 +18,14 @@ jobs:
       - name: Build frontend
         working-directory: frontend
         run: |
-          # 不能用 npm ci：package-lock.json 是在 Linux 上產生的，npm 對
-          # optional dependencies（rollup 的平台專屬原生模組）的鎖定是跨平台
-          # 不可攜的已知問題（npm/cli#4828），Windows runner 上 npm ci 會漏裝
-          # @rollup/rollup-win32-x64-msvc。npm install 每次在當下平台重新解析
-          # 就不會有這問題，代價只是比 ci 慢個幾秒，CI build 不在意這個。
+          # package-lock.json 是在 Linux 上產生的，rollup 的 optional
+          # dependencies（平台專屬原生模組）鎖定跨平台不可攜，是 npm 已知的
+          # bug（npm/cli#4828）。光把 npm ci 換成 npm install 不夠——只要
+          # lockfile 還在，npm install 一樣會照著它已經鎖住的套件清單走，
+          # 不會補抓 Windows 專屬那份。要照 npm 官方錯誤訊息講的，把
+          # lockfile 一起砍掉，npm install 才會在當下平台重新完整解析。
+          # （node_modules 在 CI 是全新 checkout，本來就不會殘留，不用另外砍）
+          Remove-Item -ErrorAction SilentlyContinue package-lock.json
           npm install
           npm run build
           # 桌面單一 process 模式：前端跟後端同源，API_BASE 留空走相對路徑
