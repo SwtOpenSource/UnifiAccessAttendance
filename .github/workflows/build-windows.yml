@@ -18,7 +18,12 @@ jobs:
       - name: Build frontend
         working-directory: frontend
         run: |
-          npm ci
+          # 不能用 npm ci：package-lock.json 是在 Linux 上產生的，npm 對
+          # optional dependencies（rollup 的平台專屬原生模組）的鎖定是跨平台
+          # 不可攜的已知問題（npm/cli#4828），Windows runner 上 npm ci 會漏裝
+          # @rollup/rollup-win32-x64-msvc。npm install 每次在當下平台重新解析
+          # 就不會有這問題，代價只是比 ci 慢個幾秒，CI build 不在意這個。
+          npm install
           npm run build
           # 桌面單一 process 模式：前端跟後端同源，API_BASE 留空走相對路徑
           # （docker-compose 部署是兩個容器兩個 port，config.json 才需要指定 API_BASE）
