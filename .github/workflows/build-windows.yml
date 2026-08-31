@@ -8,6 +8,11 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    # repo/org 預設 GITHUB_TOKEN 權限是唯讀，softprops/action-gh-release 建立
+    # release 需要 contents: write，不明確宣告會回 "Resource not accessible
+    # by integration"（build/exe 本身其實有成功，只有最後這步失敗）。
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
